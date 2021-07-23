@@ -51,5 +51,84 @@ run kube-bench
 ./kube-bench --config-dir `pwd`/cfg --config `pwd`/cfg/config.yaml 
 ```
 
+### Security Primitives
+
+* kube-apiserver
+* who can access and what can they do. 
+* authenticate - usernames/password, certificate, external eg. ldap, service accounts
+* authorization - rbac, groups and user permissions, abac etc.
+
+Components (all secured by tls certs)
+* Kube API Server
+* ETCD
+* Kubelet
+* Kube Proxy
+* Kube Scheduler
+* Kube Controller Manager
+
+By default all components can talk to each other, you can control comms by network policies.
+
+### Authentication
+
+- multiple nodes
+- access by admin, developers, end users, 3rd party application for integration.
+- focus is on admin users
+- - users (human) 
+- - robots
+- k8s does not manage regular users
+- k8s does manage service accounts
+
+#### Users 
+- all requests go through kube-apiserver, authenticates first and then processes
+- users
+- - static password file
+- - static token file
+- - certificates
+- - identity services (ldap, kerberos etc.)
+
+#### User File Authentication.
+```
+user-details.csv
+password, user, id, group(optional)
+
+kube-apiserver -basic-auth-file=user-details.csv
+```
+
+If using kubeadm
+```
+/etc/kubernetes/manifests/kube-apiserver.yaml
+
+spec:
+  containers:
+  - command:
+  - kube-apiserver
+  ...
+  - --basic-auth-file=user-details.csv
+ ```
+ 
+ you can then pass user/pass in a curl cmd eg.
+ ```
+ curl -v -k https://master-node-ip:6443/api/v1/pods -u "user1:pass"
+ ```
+ 
+ #### Token File Authentication
+ ```
+ user-token-details.csv
+ kjjsskkkksi,user10,u0001,group1
+ 
+ kube-apiserver --token-auth-file=user-token-details.csv
+ 
+ curl -v -k https://master-node-ip:6443/api/v1/pods --header "Authorization: Bearer  kjjsskkkksi"
+ ```
+ 
+Note! : These two methods are considered insecure. 
+
+
+
+
+ 
+
+
+
 
  

@@ -36,5 +36,20 @@ Profile : Level 1 - Server
 
 ```
 
+* CIS for kubernetes
+* Download from CIS Web Site
+* https://workbench.cisecurity.org/
+* kube-bench from Aqua Security
+* Deploy as a docker container, or a pod or a binary.
+* Download and install.
+```
+curl -L https://github.com/aquasecurity/kube-bench/releases/download/v0.4.0/kube-bench_0.4.0_linux_amd64.tar.gz -o kube-bench_0.4.0_linux_amd64.tar.gz
+tar -xvf kube-bench_0.4.0_linux_amd64.tar.gz
+```
+run kube-bench
+```
+./kube-bench --config-dir `pwd`/cfg --config `pwd`/cfg/config.yaml 
+```
+
 
  

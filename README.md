@@ -124,6 +124,54 @@ spec:
 Note! : These two methods are considered insecure. 
 
 
+### Service Accounts
+
+User Accounts (humans)
+Service Accounts (machines)
+
+```
+kubectl create serviceaccount dashboard-sa
+
+kubectl get sa
+
+```
+Token is created automatically as a secrete using the name format
+```
+sa-name-token-<unique>
+```
+
+To view token
+```
+kubectl describe secret sa-name-token-unique
+```
+This token can then be used as a bearer token to the k8s api.
+```
+curl  -v -k https://master-node-ip:6443/api --header "Authorization: Bearer eyjhb...."
+```
+
+- A default service account is created automatically in every namespace
+- A pod in that namespace automatically mounts that service account token secret
+- /var/run/secretes/kubernetes.io/serviceaccount
+- You can see this by running an ls on that location eg.
+```
+kubectl exec -it my-kubernetes-dashboard ls /var/run/secretes/kubernetes.io/serviceaccount
+ca.crt namespace token
+```
+- token is in the file "token"
+- default service account is restricted to running queries. 
+- to use a account service account specify it in the pod
+```
+spec:
+  containers:
+  serviceAccount : dashboard-sa
+```
+
+
+
+
+
+
+
 
 
  

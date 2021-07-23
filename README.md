@@ -23,4 +23,10 @@
 * CIS benchmarks allows us to assess our servers against these best practies.  
 * Center for Inernet Security (CIS) 
 
+* run assessment report
+```
+sh ./Assessor-CLI.sh -i -rd /var/www/html/ -nts -rp index
+```
+
+
  

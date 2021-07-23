@@ -166,8 +166,67 @@ spec:
   serviceAccount : dashboard-sa
 ```
 
+### Service Account rbac
+```
+cat /var/rbac/dashboard-sa-role-binding.yaml 
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: dashboard-sa # Name is case sensitive
+  namespace: default
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: pod-reader # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+$ cat /var/rbac/pod-reader-role.yaml 
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+```
+
+Get the sa secret and token
+```
+k get secret
+NAME                       TYPE                                  DATA   AGE
+dashboard-sa-token-6jxkt   kubernetes.io/service-account-token   3      3m8s
+default-token-jqwxm        kubernetes.io/service-account-token   3      177m
+controlplane $ k describe secret dashboard-sa-token-6jxkt
+Name:         dashboard-sa-token-6jxkt
+Namespace:    default
+Labels:       <none>
+Annotations:  kubernetes.io/service-account.name: dashboard-sa
+              kubernetes.io/service-account.uid: 4ad0ff43-6acf-44cf-9ce9-1f2225a444a5
+
+Type:  kubernetes.io/service-account-token
+
+Data
+====
+ca.crt:     1066 bytes
+namespace:  7 bytes
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6InVRamk0bGhqbzZsVGFFa21yU0FkZndCVWNoc1VqSHU4VFlfNmFZakRjbmcifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRhc2hib2FyZC1zYS10b2tlbi02anhrdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJkYXNoYm9hcmQtc2EiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI0YWQwZmY0My02YWNmLTQ0Y2YtOWNlOS0xZjIyMjVhNDQ0YTUiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDpkYXNoYm9hcmQtc2EifQ.G1kZGXm8lp1YIlk_S0qgbgU6AaZCxiSq8QwF8UctixTfNt_XuYvsI_bYcMRu3glJKwMtE4YrEIlFMuk6SCjc45LkczzNvWTmPc05SlIukxTl5KPOcg2A-Ps-z58evcijUu-maoBu38v0AJSjsQNL4liionYZIFpkcy_KheoafXiERDJgHDvJmQNyIHpeWmQptIFWh13hXz1g-zavHdB0dy_Vn-QfuxzRvFwlasDgAK1-l00G61FD3qCYRBfqTr7qtRnoDQIqogBk7k4rzwOW0kOQgWUbNsxxMcyRfT3fFi9yIswOT0rJLsj__HjgLgXpF8mCyFgnCvM1IiS8zJqXDA
+```
 
 
+
+  
 
 
 

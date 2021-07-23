@@ -26,6 +26,14 @@
 * run assessment report
 ```
 sh ./Assessor-CLI.sh -i -rd /var/www/html/ -nts -rp index
+
+sh ./Assessor-CLI.sh -i -rd /var/www/html/ -nts -rp index
+Use below setting while running tests
+
+Benchmarks/Data-Stream Collections: : CIS Ubuntu Linux 18.04 LTS Benchmark v2.0.1
+
+Profile : Level 1 - Server
+
 ```
 
 

@@ -243,6 +243,166 @@ spec:
 ```
 
 
+### TLS Certificate Basics
+
+- certificates establish trust between parties.
+- symmetric .v. asymetric encryption
+- key pair - private key, public key. 
+- Certificate Authorities
+
+
+#### View Certificate Details
+- healthcheck of certificates.
+- "the hard way" .v. kubeadm
+- thw = /etc/systemd/kube-apiserver.service
+- kubeadm = /etc/kubernetes/manifests/kube-apiserver.yaml
+
+##### Lab
+- kube-api server cert file.
+```
+# cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep crt
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+    - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+    - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
+    - --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt
+    - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
+    - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
+    
+    /etc/kubernetes/pki/apiserver.crt
+    
+```
+- Identify the Certificate file used to authenticate kube-apiserver as a client to ETCD Server
+```
+# cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep etcd
+    - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+    - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+    - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+    - --etcd-servers=https://127.0.0.1:2379
+    
+    /etc/kubernetes/pki/apiserver-etcd-client.crt
+```
+- Identify the key used to authenticate kubeapi-server to the kubelet server
+```
+# cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep kubelet
+    - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
+    - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
+    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+    
+    /etc/kubernetes/pki/apiserver-kubelet-client.key
+```
+- Identify the ETCD Server Certificate used to host ETCD server
+```
+# cat /etc/kubernetes/manifests/etcd.yaml | grep crt
+    - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+    - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
+    - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    
+    /etc/kubernetes/pki/etcd/server.crt
+```
+- Identify the ETCD Server CA Root Certificate used to serve ETCD Server
+```
+/etc/kubernetes/pki/etcd/ca.crt
+```
+- What is the Common Name (CN) configured on the Kube API Server Certificate?
+```
+# openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep CN
+        Issuer: CN = kubernetes
+        Subject: CN = kube-apiserver
+        
+        kube-apiserver
+```
+- What is the name of the CA who issued the Kube API Server Certificate?
+```
+# openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep Issuer
+        Issuer: CN = kubernetes
+```
+- Which of the below alternate names is not configured on the Kube API Server Certificate?
+```
+# openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep -A 1 Alternative
+            X509v3 Subject Alternative Name: 
+                DNS:controlplane, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, IP Address:10.96.0.1, IP Address:10.22.248.6
+
+```
+- What is the Common Name (CN) configured on the ETCD Server certificate?
+```
+# openssl x509 -in /etc/kubernetes/pki/etcd/server.crt -noout -text | grep CN
+        Issuer: CN = etcd-ca
+        Subject: CN = controlplane
+        
+        controlplane
+```
+- How long, from the issued date, is the Kube-API Server Certificate valid for?
+```
+# openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep -A 3 Validity
+        Validity
+            Not Before: Jul 24 15:52:33 2021 GMT
+            Not After : Jul 24 15:52:34 2022 GMT
+        Subject: CN = kube-apiserver
+        
+        1 year
+```
+- How long, from the issued date, is the Root CA Certificate valid for?
+```
+openssl x509 -in /etc/kubernetes/pki/ca.crt -text -noout | grep -A 3 Validity
+        Validity
+            Not Before: Jul 24 15:52:33 2021 GMT
+            Not After : Jul 22 15:52:33 2031 GMT
+        Subject: CN = kubernetes
+        
+        10 years
+```
+- Kubectl suddenly stops responding to your commands. Check it out! Someone recently modified the /etc/kubernetes/manifests/etcd.yaml file
+```
+cat /etc/kubernetes/manifests/etcd.yaml | grep crt
+    - --cert-file=/etc/kubernetes/pki/etcd/server-certificate.crt
+    - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
+    - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+    - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+root@controlplane:~# ls /etc/kubernetes/pki/etcd/server-certificate.crt
+ls: cannot access '/etc/kubernetes/pki/etcd/server-certificate.crt': No such file or directory
+```
+
+- The kube-api server stopped again! Check it out. Inspect the kube-api server logs and identify the root cause and fix the issue.
+```
+# kubectl get pods
+Unable to connect to the server: net/http: TLS handshake timeout
+
+# docker ps -a | grep apiserver
+6955b6be9a89        ca9843d3b545           "kube-apiserver --ad…"   23 seconds ago       Exited (1) Less than a second ago                       k8s_kube-apiserver_kube-apiserver-controlplane_kube-system_b0c7fa5021cdd1d96107d4d0b0aa1b84_2
+e3e5ee1254db        ca9843d3b545           "kube-apiserver --ad…"   About a minute ago   Exited (1) 36 seconds ago                               k8s_kube-apiserver_kube-apiserver-controlplane_kube-system_b0c7fa5021cdd1d96107d4d0b0aa1b84_1
+2ed4ec96d244        k8s.gcr.io/pause:3.2   "/pause"                 About a minute ago   Up About a minute   
+
+# docker logs 8f7dc5811bc2
+W0724 16:24:39.766868       1 clientconn.go:1223] grpc: addrConn.createTransport failed to connect to {https://127.0.0.1:2379  <nil> 0 <nil>}. Err :connection error: desc = "transport: authentication handshake failed: x509: certificate signed by unknown authority". Reconnecting...
+W0724 16:24:39.775775       1 clientconn.go:1223] grpc: addrConn.createTransport failed to connect to {https://127.0.0.1:2379  <nil> 0 <nil>}. Err :connection error: desc = "transport: authentication handshake failed: x509: certificate signed by unknown authority". Reconnecting...
+W0724 16:24:40.771066       1 clientconn.go:1223] grpc: addrConn.createTransport failed to connect to {https://127.0.0.1:2379  <nil> 0 <nil>}. Err :connection error: desc = "transport: authentication handshake failed: x509: certificate signed by unknown authority". Reconnecting...
+W0724 16:24:41.364354       1 clientconn.go:1223] grpc: addrConn.createTransport failed to connect to {https://127.0.0.1:2379  <nil> 0 <nil>}. Err :connection error: des
+
+/// port 2379 is used by ETCD
+
+# cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep etcd
+    - --etcd-cafile=/etc/kubernetes/pki/ca.crt
+    - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+    - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+    - --etcd-servers=https://127.0.0.1:2379
+    
+/// edcd has its own ca
+// change
+- --etcd-cafile=/etc/kubernetes/pki/ca.crt
+// to
+- --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+
+
+```
+
+
+
+
+
+
+
 
 
 

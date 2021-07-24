@@ -397,6 +397,46 @@ W0724 16:24:41.364354       1 clientconn.go:1223] grpc: addrConn.createTransport
 
 ```
 
+### Cert API
+
+```
+ cat /var/answers/akshay-csr.yaml
+apiVersion: certificates.k8s.io/v1beta1
+kind: CertificateSigningRequest
+metadata:
+  name: akshay
+spec:
+  signerName: kubernetes.io/kube-apiserver-client
+  groups:
+  - system:authenticated
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZqQ0NBVDRDQVFBd0VURVBNQTBHQTFVRUF3d0dZV3R6YUdGNU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRgpBQU9DQVE4QU1JSUJDZ0tDQVFFQXd5OGpqQzdWNHVwdkRYT3ZRUDZkQVZMMG1yMHdmVmNlQ01EZXJnclBWRUIzClZxZEFrRmUzQW5uaCtycE5WcDVyRXNBb2xKZTQyWmhmRDFHc0N1OXBYcVVDSXJFSnpGNnVXWEhBdzFXbjNJRHoKWTJyNTlzMC9rY2ZaM0JyN203cGFNU0NnS1loZWVweSt3OCt3aXlPMWNNNkR4N2d3b2E5SHdDRWEwVzFqUlF3cApFL0dGWHB5TjhpTjlNMEJ3QjdJMjFaY093eFBBQVlkVUF0Uk1EcmtzNlZGanVha3dlam0vVjd4czF0NlZLNzMwCi9qWW9aYTdWRUJkZmY3VVhvSWErTDg1UzFDMUhLNnQ3am1VMUlYcHhOWjZTU0VJU3MyRVZDWkY3bExtMW01ZDIKc204a3J5WUhLQzhrQVdvMVlhSHRNMzVKN1FLY0ZtYlc2czlzTmVoWjB3SURBUUFCb0FBd0RRWUpLb1pJaHZjTgpBUUVMQlFBRGdnRUJBR3hxVDRybjRrd2ZiQW8waW5Rb0tQbURuMkh3dnhjOHZQOUlRYXlRaVJtb3E4cjNSVnNOClR1SDVXaHdKMEd0bVBLQ1U0dG01V1R0VXNVZGdCNmtHRzRIZTFNdEJBSlE2T3UwZU9jWjl1SldLbkNxMHBPRXMKNzhKa3BjY0lRdG9GSW56Y1ovZlQ2ZmVCc3JiRFh5bVQxU1M1MXk5Ly9jQnJKQjJzMFVYcVg4WnF5T0FmanpLRQppWVE1MTNsSUs2bjJiWXlaRXQ2Q3VDeXg4Q0s1d3hwYU1rNTVncnovNm5EYUZNR0ZXS3RhOFRrQ1VGT1JNQmxqCnNndXBRTVFEL2k3U2JUZk4rNlArZkJJMFVsck5LQWczYmRyendWWmhKVkF6ZDJIV3dqREc0VzQ3N2JZeEI2ek8KVkRrVGkyWnE0WGs2TURWdE8zeTEwRlROM2dteG9WZnRseGc9Ci0tLS0tRU5EIENFUlRJRklDQVRFIFJFUVVFU1QtLS0tLQo=
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+```
+
+```
+kubectl create -f /var/answers/akshay-csr.yaml
+
+k get csr -A
+NAME        AGE     SIGNERNAME                                    REQUESTOR                  CONDITION
+akshay      27s     kubernetes.io/kube-apiserver-client           kubernetes-admin           Pending
+
+kubectl certificate approve akshay
+
+k get csr/agent-smith -o yaml | grep -A 2 groups:
+  groups:
+  - system:masters
+  - system:authenticated
+
+kubectl certificate deny agent-smith
+
+ kubectl delete csr agent-smith
+
+```
+
+
 
 
 

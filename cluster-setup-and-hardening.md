@@ -507,4 +507,110 @@ clusters:
 echo '<base64-string>' | base64 --decode
 ```
 
+### API Groups
+api's are organized into groups
+```
+/version
+/api
+/apis
+/metrics
+/healthz
+/logs
+```
+
+- core group /api
+- named group /apis
+- going forward named groups will be used
+
+hierarchy
+```
+named          
+   - api group     eg. networking.k8s.io
+     - resource   eg. networkpolicy
+```
+
+actions / verbs
+- list, get, create, delete, update, watch 
+
+- access the api via proxy
+```
+kubectl proxy
+
+$ curl -k 127.0.0.1:8001
+{
+  "paths": [
+    "/.well-known/openid-configuration",
+    "/api",
+    "/api/v1",
+    "/apis",
+    "/apis/",
+    "/apis/admissionregistration.k8s.io",
+    "/apis/admissionregistration.k8s.io/v1",
+    "/apis/admissionregistration.k8s.io/v1beta1",
+    "/apis/allspark.vmware.com",
+    "/apis/allspark.vmware.com/v1alpha1",
+    "/apis/apiextensions.k8s.io",
+    "/apis/apiextensions.k8s.io/v1",
+    "/apis/apiextensions.k8s.io/v1beta1",
+    "/apis/apiregistration.k8s.io",
+    ....
+```
+- List api groups
+```
+$ curl -k 127.0.0.1:8001/apis | jq .groups[].name
+
+"apiregistration.k8s.io"
+"apps"
+"events.k8s.io"
+"authentication.k8s.io"
+"authorization.k8s.io"
+"autoscaling"
+"batch"
+"certificates.k8s.io"
+"networking.k8s.io"
+"extensions"
+"policy"
+"rbac.authorization.k8s.io"
+"storage.k8s.io"
+"admissionregistration.k8s.io"
+"apiextensions.k8s.io"
+"scheduling.k8s.io"
+"coordination.k8s.io"
+"node.k8s.io"
+"discovery.k8s.io"
+"flowcontrol.apiserver.k8s.io"
+"tsm.vmware.com"
+"allspark.vmware.com"
+"autoscaling.tsm.tanzu.vmware.com"
+"client.cluster.tsm.tanzu.vmware.com"
+"crd.antrea.tanzu.vmware.com"
+"install.istio.io"
+"kappctrl.k14s.io"
+"ops.antrea.tanzu.vmware.com"
+"security.antrea.tanzu.vmware.com"
+"config.istio.io"
+"core.antrea.tanzu.vmware.com"
+"networking.istio.io"
+"clusterinformation.antrea.tanzu.vmware.com"
+"security.istio.io"
+"stats.antrea.tanzu.vmware.com"
+"controlplane.antrea.tanzu.vmware.com"
+"metrics.k8s.io"
+"networking.antrea.tanzu.vmware.com"
+"system.antrea.tanzu.vmware.com"
+
+```
+- List storage resources
+```
+curl -k 127.0.0.1:8001/apis/storage.k8s.io/v1 | jq '.resources[].name'
+"csidrivers"
+"csinodes"
+"storageclasses"
+"volumeattachments"
+"volumeattachments/status"
+```
+
+
+
+
 

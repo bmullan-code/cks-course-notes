@@ -610,6 +610,153 @@ curl -k 127.0.0.1:8001/apis/storage.k8s.io/v1 | jq '.resources[].name'
 "volumeattachments/status"
 ```
 
+- List antrea resources
+```
+$ curl -k 127.0.0.1:8001/apis/networking.antrea.tanzu.vmware.com/v1beta1 | jq .resources[].name
+"addressgroups"
+"appliedtogroups"
+"networkpolicies"
+```
+- Get etcd health
+```
+curl -k 127.0.0.1:8001/healthz/etcd
+ok
+```
+
+### Authorization
+
+- *node* authorizer. 
+- privilidges used by kubelet to authorize to api-server
+- *ABAC*
+- policy file passed to api-server with the set of permissions (requires restart on every change)
+
+- *RBAC*
+- define roles
+- assign roles to users / groups
+- provides a more standardized approach.
+
+- *Webhook*
+- for 3rd party apps. 
+
+- *Always Allow*
+- *Always Deny*
+
+Authorization mode is specified in the api-server cli params eg.
+if a mode denies a request it is passed to the next mode in the chain
+as soon as a mode approves a request no more checks are done. 
+```
+--authorization-mode=Node, RBAC, Webhook
+```
+
+### RBAC
+
+- roles
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list","get","create"...]
+```
+
+- rolebindings
+```
+apiversion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devuser-developer-binding
+subjects:
+- kind: User
+  name: dev-user
+  apiGroup: rbac.authorization.k8s.io/v1
+roleRef:
+  kind: Role
+  name: developer
+  apiGroup: rbac.authorization.k8s.io/v1
+```
+
+- check access
+```
+kubectl auth can-i create deployments
+
+# as another user
+kubectl auth can-i create deployments --as dev-user
+
+# as another user in a specific namespace
+kubectl auth can-i create deployments --as dev-user --namespace test
+```
+
+
+- you can restrict access to specific named resources by adding a resourceNames attribute to the role eg.
+```
+eg. access to only the "blue" and "green" pods.
+
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list","get","create"...]
+  resourceNames: ["blue","green"]
+```
+
+#### Lab
+
+- check the access modes
+```
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep mode
+    - --authorization-mode=Node,RBAC
+```
+- How many roles exist in the default namespace?
+```
+kubectl get roles -n default
+No resources found in default namespace.
+```
+- how many in all namespaces
+```
+kubectl get roles -A | wc -l
+13
+```
+- What are the resources the kube-proxy role in the kube-system namespace is given access to?
+```
+kubectl get role kube-proxy -n kube-system -o yaml | grep resourceNames: -A 5
+  resourceNames:
+  - kube-proxy
+  resources:
+  - configmaps
+  verbs:
+  - get
+```
+- Check if the user can list pods in the default namespace.
+```
+k auth can-i list pods -n default --as dev-user
+no
+```
+-
+```
+rules:
+- apiGroups: ["extensions", "apps"]
+  resources: ["deployments"]
+  verbs: ["create"]
+- apiGroups:
+  - ""
+  resourceNames:
+  - dark-blue-app
+  resources:
+  - pods
+  verbs:
+  - get
+  - watch
+  - create
+  - delete
+
+# k auth can-i -n blue --as dev-user create deployment
+yes
+  
+```
+
+
 
 
 

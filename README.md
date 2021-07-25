@@ -436,6 +436,92 @@ kubectl certificate deny agent-smith
 
 ```
 
+### Kubeconfig
+
+- Access k8s api via cert
+```
+curl http://api-server:6443/api/v1/pods --key admin.key --cert admin.crt --cacert ca.crt
+```
+and via kubectl
+```
+kubectl get pods --server api-server:6443 --client-key admin.key --client-certificate admin.crt --certificate-authority ca.crt
+```
+or kubeconfig, by default in 
+```
+$HOME/.kube/config
+```
+or via cli
+```
+--kubeconfig config
+```
+
+Kubeconfig has 3 sections
+- clusters
+- - eg. production, dev, google
+- contexts
+- - eg admin@production, dev@google
+- users
+- - eg. Admin, DevUser, ProdUser
+
+```
+apiVersion: v1
+kind: Config
+
+clusters:
+- name:
+  cluster:
+    certificate-authority:
+    server:
+    
+contexts:
+- name:
+  context:
+    cluser:
+    user:
+
+users:
+- name:
+  user:
+    client-certificate:
+    client-key:
+
+```
+- Current context is reflected in the file
+```
+kubectl config use-context my-context
+
+apiVersion: v1
+kind: Config
+current-context: my-context
+```
+
+- A context can specify a namespace
+```
+    
+contexts:
+- name:
+  context:
+    cluser:
+    user:
+    namespace: my-namespace
+```
+- Certificates in kubeconfig should be a full path to the file, however you can also inline certificate information
+```
+# encode cert as base64
+cat ca.crt | base64
+
+clusters:
+- name:
+  cluster:
+    certificate-authority-data: <base64-string>
+    server:
+    
+# to decode
+echo '<base64-string>' | base64 --decode
+```
+
+
+
 
 
 

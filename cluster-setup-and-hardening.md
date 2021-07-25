@@ -733,7 +733,7 @@ kubectl get role kube-proxy -n kube-system -o yaml | grep resourceNames: -A 5
 k auth can-i list pods -n default --as dev-user
 no
 ```
--
+- Add permissions to create deployments
 ```
 rules:
 - apiGroups: ["extensions", "apps"]

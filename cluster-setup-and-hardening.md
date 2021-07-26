@@ -12,7 +12,7 @@
 - Secure ingress 
 
 
-###CIS Benchmarks 
+### CIS Benchmarks 
 
 * Security benchmark. For example, get to data server and infect via a usb device (physical access), so usb ports should be disable by default. 
 * Access – who can access, and who can access as root. Sudo is configured and only certain users 

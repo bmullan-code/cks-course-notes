@@ -769,6 +769,46 @@ yes
   
 ```
 
+### Cluster Roles & Bindings
+
+- some resources are namespace scoped eg. pods, jobs, secrets etc.
+- some resources are cluster scoped, eg. nodes, pv, clusterrole, clusterrolebinding, csr, namespaces
+- to see a list of namespaced resources
+```
+kubectl api-resources --namespaced=true
+```
+- to see a full list of cluster scoped resources
+```
+kubectl api-resources --namespaced=false
+```
+- cluster roles are roles for cluster scoped resources
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin
+rules
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["list", "create", "get","delete"]
+```
+- cluster role binding
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-admin-binding
+subjects:
+- kind: User
+  apiGroup: rbac.authorization.k8s.io
+  name: michelle
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: node-admin
+```
+- some default cluster roles
+- 
 
 
 

@@ -1,6 +1,6 @@
 ### Contents
 
-- (CIS benchmarks)[#CIS-Benchmarks]
+- (CIS benchmarks)[#cis-benchmarks]
 - Authentication & Authorization mechanisms 
 - Service Accounts 
 - TLS 

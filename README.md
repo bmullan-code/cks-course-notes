@@ -1,5 +1,10 @@
 
-## Cluster Setup & Hardening 
+Tips
+https://devopscube.com/cks-exam-guide-tips/
+
+
+
+### Cluster Setup & Hardening 
 #### CIS benchmarks 
 #### Authentication & Authorization mechanisms 
 #### Service Accounts 
@@ -11,13 +16,13 @@
 #### Network policy 
 #### Secure ingress 
 
-## System Hardeninng
+### System Hardeninng
 
-## Minimize Microservices Vulnerabilities
+### Minimize Microservices Vulnerabilities
 
-## Supply Chain Security
+### Supply Chain Security
 
-## Monitoring, Logging and Runtime
+### Monitoring, Logging and Runtime
 
 
 

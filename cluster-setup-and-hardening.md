@@ -871,6 +871,24 @@ kubelet-config.yaml
 ```
 - enable authentication via certifciate or bearer token.
 
+- to make changes to kubelete and restart.
+```
+# check authentication
+curl -sk https://localhost:10250/pods
+
+# modify the config
+nano /var/lib/kubelet/config.yaml
+
+# restart kubelet
+systemctl restart kubelet
+```
+
+- check metrics on anon port
+```
+curl -sk http://localhost:10255/metrics
+
+
+
 
 
 

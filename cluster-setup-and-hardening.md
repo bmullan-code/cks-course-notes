@@ -841,8 +841,35 @@ roleRef:
 ```
 
 ### Kubelet Security
+- secure traffice between the api-server and the kubelet on each of the worker nodes.
+role of the kubelet
+- registers node
+- creates pod via containerd / docker
+- monitor node and pods and reports to api-server
+- to see the options configured for the running kubelet
+```
+ps -aux | grep kubelet
+```
+- configuration is in 
+```
+/var/lib/kubelet/config.yaml
+```
+- security aspects of kubelet
+- only respond to requests from api-server
+- ports 10250, 10255 api
+- by default allows anonymous access
 
-
+authentication
+- by default allows all requests to go through without authentication.
+- to disable set 
+```
+--anonymous-auth=false
+```
+- can also be set in 
+```
+kubelet-config.yaml
+```
+- enable authentication via certifciate or bearer token.
 
 
 

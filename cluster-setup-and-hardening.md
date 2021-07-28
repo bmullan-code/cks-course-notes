@@ -1000,7 +1000,39 @@ EOF
 ```
 
 
+### Verify platform binaries before deploying
 
+- Download binaries from https://github.com/kubernetes/kubernetes/releases
+- verify
+```
+curl https://dl.k8s.io/v1.20.0/kubernetes.tar.gz -L -o kubernetes.gz
+# gen a hash of file
+shasum -a 512 kubernetes.gz # macos
+sha512sum kubernetes.tar.gz
+# compare to the sha on page eg. https://github.com/kubernetes/kubernetes/releases/tag/v1.20.9
+```
+
+### API Versions
+- each cluster has a specific version
+```
+kubectl get nodes
+k get nodes
+NAME                                  STATUS   ROLES                  AGE     VERSION
+dev-cluster-2-control-plane-h7jxl     Ready    control-plane,master   7d21h   v1.20.5+vmware.1
+dev-cluster-2-md-0-75f7fc7c4c-5xzjh   Ready    <none>                 7d21h   v1.20.5+vmware.1
+dev-cluster-2-md-0-75f7fc7c4c-6cznw   Ready    <none>                 7d21h   v1.20.5+vmware.1
+dev-cluster-2-md-0-75f7fc7c4c-l4fb5   Ready    <none>                 7d21h   v1.20.5+vmware.1
+```
+- version = major.minor.patch
+- minor version every few months.
+- patches are released more often with fixes
+- these are stable releases
+- but also alpha and beta. 
+- components have their own versions eg. etcd. 
+- look at release notes to see
+  
+  
+  
 
 
 

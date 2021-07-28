@@ -888,6 +888,31 @@ systemctl restart kubelet
 curl -sk http://localhost:10255/metrics
 
 
+### Kubectl Proxy
+
+- proxy can be used unauthenticated because we have authenticatetd it via kubectl.
+- you can manage the cluster via kubectl from anywhere
+- or via curl, proxy allows you to make unauthenticatetd calls to localhost
+```
+kubectl proxy
+curl -k http://127.0.0.1:8001
+```
+- proxy can also be used to access services running within the cluster
+```
+kubectl proxy
+curl http://localhost:8001/api/v1/namespaces/default/services/nginx/proxy
+```
+- alternatively we can port forward
+- port-forward takes a pod, service or replicaset as an argument
+```
+kubectl port-forward service/nginx 28080:80
+curl http://localhost:28080/
+```
+
+
+
+
+
 
 
 

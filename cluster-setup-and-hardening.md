@@ -910,6 +910,94 @@ curl http://localhost:28080/
 ```
 
 
+### Kubernetes Dashboard
+- view configs, secrets
+- create applications etc.
+- need to protect access to it.
+- it was originally very open and was the target of cyber attacks (eg. at tesla the dashboard was left open)
+- you can access a set of recommended configuration by applying
+```
+kubectl apply -f https://path-to-dashboard/recommneded.yaml
+```
+- dashboard servicde is clusterip by default to prevent open access
+- to access you can create a proxy
+```
+kubectl proxy
+```
+
+## Dashboard Authentication Mechanisms
+- token
+```
+create a service account user and get its token
+be careful in what permissions you assign
+```
+
+- kubeconfig
+```
+upload kubeconig file
+```
+
+## Lab
+- start proxy
+```
+# deploy dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+proxy --address=0.0.0.0 --disable-filter &
+# access endpoint url
+https://8001-port-29676855ea704cee.labs.kodekloud.com/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login
+
+# get the token for a user
+kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+
+```
+
+- Setup service account, roles and role bindings for dashboard
+```
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dashboard-admin
+  namespace: kubernetes-dashboard
+EOF
+
+
+# admin RoleBinding
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dashboard-admin-binding
+  namespace: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: dashboard-admin
+  namespace: kubernetes-dashboard
+EOF
+
+
+## list-namespace ClusterRoleBinding
+
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dashboard-admin-list-namespace-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: list-namespace
+subjects:
+- kind: ServiceAccount
+  name: dashboard-admin
+  namespace: kubernetes-dashboard
+EOF
+
+```
 
 
 

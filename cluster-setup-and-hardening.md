@@ -1032,8 +1032,108 @@ dev-cluster-2-md-0-75f7fc7c4c-l4fb5   Ready    <none>                 7d21h   v1
 - look at release notes to see
   
   
+### Upgrading a cluster
+
+- api-server talks to all other components.
+- so, they should be at or below the version of the api-server
+- those components are controller-manager, kubelet, kube-proxy, kube-scheduler, kubectl
+
+- api-server : X eg. 1.10
+- controller-manager : X-1. eg. 1.9
+- kube-scheduler: X-1
+- kubelet : X-2
+- kube-proxy : X-1
+- kubectl : X+1 > X-1 eg. 1.11 - 1.9
+
+- kubernetes supports the most recent 3 minor versions eg. 1.12, 1.11, 1.10
+- can you go 1.10 -> 1.13 ... no
+- recommend you only upgrade one minor version at a time.
+  
+- use the upgrade plan
+```
+# kubeadm upgrade plan
+[upgrade/config] Making sure the configuration is correct:
+[upgrade/config] Reading configuration from the cluster...
+[upgrade/config] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
+[preflight] Running pre-flight checks.
+[upgrade] Running cluster health checks
+[upgrade] Fetching available versions to upgrade to
+[upgrade/versions] Cluster version: v1.19.0
+[upgrade/versions] kubeadm version: v1.19.0
+I0729 19:17:48.253147   32028 version.go:252] remote version is much newer: v1.21.3; falling back to: stable-1.19
+[upgrade/versions] Latest stable version: v1.19.13
+[upgrade/versions] Latest stable version: v1.19.13
+[upgrade/versions] Latest version in the v1.19 series: v1.19.13
+[upgrade/versions] Latest version in the v1.19 series: v1.19.13
+
+Components that must be upgraded manually after you have upgraded the control plane with 'kubeadm upgrade apply':
+COMPONENT   CURRENT       AVAILABLE
+kubelet     2 x v1.19.0   v1.19.13
+
+Upgrade to the latest version in the v1.19 series:
+
+COMPONENT                 CURRENT   AVAILABLE
+kube-apiserver            v1.19.0   v1.19.13
+kube-controller-manager   v1.19.0   v1.19.13
+kube-scheduler            v1.19.0   v1.19.13
+kube-proxy                v1.19.0   v1.19.13
+CoreDNS                   1.7.0     1.7.0
+etcd                      3.4.9-1   3.4.9-1
+
+You can now apply the upgrade by executing the following command:
+
+        kubeadm upgrade apply v1.19.13
+```
   
 
+- upgrade with kubeadm
+```
+kubeadm upgrade plan
+kubeadm upgrade apply
+```
+- first upgrade the master
+- then upgrade the workers
+- api-server, scheduler and controller-manager will be down briefly during the upgrade.
+- workloads continue to work as normal. 
+- upgrade the master first.
+- then upgrade workers using one of these upgrade strategies
+  1. all workers at once, causes downtime for workloads.
+  2. one worker node at a time.
+  3. add new nodes to the cluster, add one new node at a time and move workloads from old node to new node.
+- process
+```
+kubeadm upgrade plan
+```
+- note kubelets must be upgraded manually as they are not managed by kubeadm.
+```
+# first upgrade kubeadm.
+apt-get upgrade -y kubeadm=1.12.0-00
+kubeadm upgrade apply v1.12.0
+# note kubectl get nodes will still show old version as it reports the version of the kubelet
+# so we must also upgrade kubelet
+apt-get upgrade -y kubelet=1.12.0-00
+systemctl restart kubelet
+# now running kubectl get nodes shows the new version.
+```
+  
+- now upgrade the workers.
+```
+# first drain the node (will also cordon it)
+kubectl drain node-1 
+
+# ssh to worker and run
+apt-get upgrade -y kubeadm=1.12.0-00
+apt-get upgrade -y kubelet=1.12.0-00
+kubeadm upgrade node config --kubelet-version v.12.0
+systemctl restart kubelet
+```
+- then uncordon the node
+```
+kubectl uncordon node-1
+```
+  
+  
+  
 
 
 

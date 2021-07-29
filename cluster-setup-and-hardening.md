@@ -893,7 +893,7 @@ curl -sk http://localhost:10255/metrics
 - proxy can be used unauthenticated because we have authenticatetd it via kubectl.
 - you can manage the cluster via kubectl from anywhere
 - or via curl, proxy allows you to make unauthenticatetd calls to localhost
-```
+
 kubectl proxy
 curl -k http://127.0.0.1:8001
 ```
@@ -948,7 +948,6 @@ https://8001-port-29676855ea704cee.labs.kodekloud.com/api/v1/namespaces/kubernet
 
 # get the token for a user
 kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
-
 ```
 
 - Setup service account, roles and role bindings for dashboard
@@ -960,9 +959,10 @@ metadata:
   name: dashboard-admin
   namespace: kubernetes-dashboard
 EOF
+```
 
-
-# admin RoleBinding
+- admin RoleBinding
+```
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -979,9 +979,9 @@ subjects:
   namespace: kubernetes-dashboard
 EOF
 
-
-## list-namespace ClusterRoleBinding
-
+```
+- list-namespace ClusterRoleBinding
+```
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -996,7 +996,6 @@ subjects:
   name: dashboard-admin
   namespace: kubernetes-dashboard
 EOF
-
 ```
 
 
@@ -1006,13 +1005,17 @@ EOF
 - verify
 ```
 curl https://dl.k8s.io/v1.20.0/kubernetes.tar.gz -L -o kubernetes.gz
-# gen a hash of file
+```
+- gen a hash of file
+```
 shasum -a 512 kubernetes.gz # macos
 sha512sum kubernetes.tar.gz
-# compare to the sha on page eg. https://github.com/kubernetes/kubernetes/releases/tag/v1.20.9
+
+compare to the sha on page eg. https://github.com/kubernetes/kubernetes/releases/tag/v1.20.9
 ```
 
 ### API Versions
+
 - each cluster has a specific version
 ```
 kubectl get nodes

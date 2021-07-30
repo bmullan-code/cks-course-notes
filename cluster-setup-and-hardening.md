@@ -1135,8 +1135,43 @@ systemctl restart kubelet
 kubectl uncordon node-1
 ```
   
-  
-  
+### Network Policies
+
+- ingress
+- egress
+- be default "allow all" all traffic between pods and servcies within the cluster
+- example
+```
+web pod listens on 80
+api pod listens on 5000
+db pod listens on 3306
+```
+- network policy applies to pods.
+- uses lables and selectors to apply policy
+```
+# applies to pods with the label role:db and only allows traffic from pods with the name api-pod
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+  matchLabels:
+    role: db
+policyTypes:
+- Ingress
+ingress:
+- from:
+  - podSelector:
+    matchLabels:
+      name: api-pod
+  ports:
+  - protocol: TCP
+    port: 3306
+```
+- not all cni's support networkpolicies, for example flannel does not
+- 
+
 
 
 

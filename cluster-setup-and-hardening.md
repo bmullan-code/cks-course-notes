@@ -1170,8 +1170,149 @@ ingress:
     port: 3306
 ```
 - not all cni's support networkpolicies, for example flannel does not
-- 
+
+- NOTE
+- podSelector will select pods in all namespaces by default.
+- if you want to select by namespace use a namespaceSelector eg.
+```
+ingress:
+- from:
+  - podSelector: 
+    ...
+    namespaceSelector:
+      matchLabels:
+        name: prod
+```
+- ipblock can be used to allow ingress from non-pod external servers eg.
+```
+ingress:
+- from:
+  ...
+  - ipBlock:
+      cidr: 192.168.5.10/32
+```
+
+### Lab 
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: internal-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      name: internal
+  policyTypes:
+  - Egress
+  - Ingress
+  ingress:
+    - {}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          name: mysql
+    ports:
+    - protocol: TCP
+      port: 3306
+
+  - to:
+    - podSelector:
+        matchLabels:
+          name: payroll
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+```
+
+### Ingress 
+
+- a nodeport makes a service available on a high port eg. 38080 on the nodes in the cluster
+- a loadbalancer service will send a request to the underlying platform to create a loadbalancer.
+- think of ingress as a layer 7 loadbalancer built into kubernetes
 
 
 
+### Docker Service Configuration
 
+```
+systemctl start docker
+systemctl status docker
+systemctl stop docker
+
+# manually
+dockerd --debug
+# docker listens on unix socket, docker daemon is only available on the same host. 
+/var/run/docker.sock
+# to access docker daemon from another host
+dockerd --debug --host=tcp://192.168.1.10:2375
+# now daemon is acceessible from another host eg.
+export DOCKER_HOST=tcp://192.168.1.10:2375
+docker ps
+# but be very careful with this, especially if no internet host, no authentication. 
+# to enable encryption (note the new port number)
+--host=tcp://192.168.1.10:2376 --tls=true -tlscert=/var/docker/server.pem -tlskey=/var/docker/serverkey.pem
+# these settings can be moved to a coniguration file. 
+/etc/docker/daemon.json
+{
+  "debug" : true,
+  "hosts" : ["tcp://192.168.1.10:2376"],
+  "tls" : true,
+  "tlscert" : "/var/docker/server.pem",
+  "tlskey" : "/var/docker/serverkey.pem" 
+}
+```
+
+### Securing the Docker Daemon
+- with access to the docker daemon can delete applications, delete volumes, run their own applications or gain access to the host by running a privilidged container.
+- you must secure the docker host eg.
+  - disable root users
+  - who has access
+  - disable password based authentication
+  - stricly enfore ssh based auth
+  - disable unused ports etc.
+
+- we can enable remote access using the method above.
+- make sure its only exposed on internal intterfaces
+- and use certificates 
+- from the client
+```
+export DOCKER_TLS=true
+export DOCKER_HOST=tcp://x.x.x.x:2376
+docker ps
+```
+or 
+```
+docker --tls=true ps
+```
+- but still no authentication
+- to do so we add tlsverify and tlscacert
+```
+/etc/docker/daemon.json
+{
+  "debug" : true,
+  "hosts" : ["tcp://192.168.1.10:2376"],
+  "tls" : true,
+  "tlscert" : "/var/docker/server.pem",
+  "tlskey" : "/var/docker/serverkey.pem", 
+  "tlsverify": " true,
+  "tlscacert": "/var/docker/cacert.pem"
+}
+```
+- we would generate client certificate (client.pem and clientkey.pem, signed by tlscacert) and share with client
+- and then on the client
+```
+export DOCKER_TLS_VERIFY=true
+export DOCKER_HOST=tcp://x.x.x.x:2376
+docker --tlscert --tlskey --tlscacert ps
+```
+- alternatively we can drop the client cert and key into the users ~/.docker directory and the docker commadn will automatically pick them up.
+- so remember tls alone does not authenticate.

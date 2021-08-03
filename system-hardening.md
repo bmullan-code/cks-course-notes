@@ -53,6 +53,13 @@ id michael
 deluser michael admin
 id michael
 ```
+- Creating a user with options
+```
+# useradd -m -d /opt/sam -u 2328 -g admin -s /bin/bash sam 
+root@controlplane:~# id sam
+uid=2328(sam) gid=1000(admin) groups=1000(admin)
+```
+
 
 
 

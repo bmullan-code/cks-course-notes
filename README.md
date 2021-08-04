@@ -4,9 +4,9 @@ https://devopscube.com/cks-exam-guide-tips/
 
 
 
-### Cluster Setup & Hardening 
+### [Cluster Setup & Hardening](cluster-setup-and-hardening.md)
 
-### System Hardeninng
+### [System Hardening](system-hardening.md)
 
 ### Minimize Microservices Vulnerabilities
 

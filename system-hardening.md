@@ -112,4 +112,48 @@ Restart sshd service
 service sshd restart
 ```
 
+### Remove Obsolete Packages
+- install only the required packages
+- remove unwanted services
+```
+systemctl list-units --type service
+systemctl status apache2
+systemctl stop apache2
+systemctl disable apache2
+apt remove apache2
+```
 
+### Restrict Kernel Modules
+- to list all modules
+```
+lsmod
+# to install a module
+modprobe pcspkr
+
+```
+- blacklist a kernel module will prevent it from loading
+```
+cat /etc/modprobe.d/blacklist.conf
+blacklist sctp
+blacklist dccp
+
+# to test
+shutdown -r now
+lsmod | grep dccp
+```
+- refer to 3.4 in the cis benchmark - uncommon network protocols
+
+### Identify and disable open ports
+- to check for open listen ports
+```
+netstat -an | grep -w LISTEN
+```
+- to identify what services ports are used for 
+```
+cat /etc/services | grep -w 53
+
+domain 53/tcp # Domain name server
+domain 53/udp
+```
+- make use of the reference documentation to know which ports should be open, for example for k8s control plane, k8s worker node etc.
+- 

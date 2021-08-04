@@ -154,6 +154,10 @@ cat /etc/services | grep -w 53
 
 domain 53/tcp # Domain name server
 domain 53/udp
+
+# also (shows service name)
+netstat -natp | grep 9090
+
 ```
 - make use of the reference documentation to know which ports should be open, for example for k8s control plane, k8s worker node etc.
 
@@ -204,7 +208,47 @@ root@controlplane:~# systemctl status nginx
      Docs: man:nginx(8)
 root@controlplane:~# rm /lib/systemd/system/nginx.service
 ```
-- 
+- We have a service running on controlplane host which is listening on port 9090. Identify the service and kill the same to free the 9090 port.
+```
+root@controlplane:~# netstat -natp | grep 9090
+tcp        0      0 0.0.0.0:9090            0.0.0.0:*               LISTEN      16496/apache2  
+
+root@controlplane:~# systemctl stop apache2
+```
+- We have the wget package version v1.18 installed on the host controlplane. Check for updates available for this package and update to the latest version available in the apt repos
+```
+root@controlplane:~# apt show wget -a
+Package: wget
+Version: 1.19.4-1ubuntu2.2
+Priority: standard
+Section: web
+...
+
+Package: wget
+Version: 1.19.4-1ubuntu2
+Priority: standard
+Section: web
+...
+
+Package: wget
+Version: 1.18-5+deb9u3
+Status: install ok installed
+Priority: important
+Section: web
+
+apt upgrade wget
+Reading package lists... Done
+Building dependency tree       
+...
+
+Setting up wget (1.19.4-1ubuntu2.2) ...
+Setting up curl (7.58.0-2ubuntu3.14) ...
+Processing triggers for dbus (1.12.2-1ubuntu1.2) ...
+Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
+root@controlplane:~# 
+```
+
+
 
 
 

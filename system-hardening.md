@@ -156,4 +156,55 @@ domain 53/tcp # Domain name server
 domain 53/udp
 ```
 - make use of the reference documentation to know which ports should be open, for example for k8s control plane, k8s worker node etc.
+
+#### Lab
+- Which of the following commands is used to list all installed packages on an ubuntu system?
+```
+# apt list --installed
+Listing... Done
+adduser/bionic,now 3.116ubuntu1 all [installed]
+apache2/bionic-updates,bionic-security,now 2.4.29-1ubuntu4.16 amd64 [installed]
+apache2-bin/bionic-updates,bionic-security,now 2.4.29-1ubuntu4.16 amd64 [installed,automatic]
+apache2-data/bionic-updates,bionic-security,now 2.4.29-1ubuntu4.16 all [installed,automatic]
+apache2-utils/bionic-updates,bionic-security,now 2.4.29-1ubuntu4.16 amd64 [installed,automatic]
+apparmor/bionic-updates,bionic-security,now 2.12-4ubuntu5.1 amd64 [installed,automatic]
+....
+```
+- List Active Services
+```
+root@controlplane:~# systemctl list-units --type service
+UNIT                               LOAD   ACTIVE SUB     DESCRIPTION                                
+apparmor.service                   loaded active exited  AppArmor initialization                    
+containerd.service                 loaded active running containerd container runtime               
+dbus.service                       loaded active running D-Bus System Message Bus                   
+docker.service                     loaded active running Docker Application Container Engine   
+```
+- Which command can be used to list the kernel modules currently loaded on a system?
+```
+root@controlplane:~# lsmod
+Module                  Size  Used by
+ip6table_mangle        16384  1
+nfsd                  393216  0
+auth_rpcgss            94208  1 nfsd
+nfs_acl                16384  1 nfsd
+lockd                  98304  1 nfsd
+grace                  16384  2 nfsd,lockd
+```
+- Stop the nginx service and remove its service unit file.
+```
+root@controlplane:~# systemctl stop nginx
+root@controlplane:~# systemctl disable nginx
+Synchronizing state of nginx.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install disable nginx
+root@controlplane:~# systemctl list-units --all | grep nginx
+root@controlplane:~# systemctl status nginx
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; disabled; vendor preset: enabled)
+   Active: inactive (dead)
+     Docs: man:nginx(8)
+root@controlplane:~# rm /lib/systemd/system/nginx.service
+```
 - 
+
+
+

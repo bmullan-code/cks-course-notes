@@ -248,6 +248,90 @@ Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
 root@controlplane:~# 
 ```
 
+### Minimize IAM Roles
+
+- particularly in the public cloud its not a good idea to use admin/root users
+- with root account a user can create/manage any service in the cloud
+- use the root account to create other users and assign permissions
+- An iam group is a collection of users, we can assign permissions to a group
+- AWS : Use AWS Trusted Advisor
+- GCP : Security Command Center
+- Azure : Azure Advisor
+
+### Minimize External Access
+
+- firewall appliances
+- ufw firewall on servers
+
+#### UFW (uncomplicated firewall)
+
+- iptables (learning curve)
+- ufw is easier, frontend for iptables
+- find ports that are listtening for connections
+```
+netstat -an | grep -w LISTEN
+```
+- install and setup ufw
+```
+apt-get update
+apt-get install ufw
+systemctl enable ufw
+systemctl start ufw
+# to see status
+ufw status
+# add some rules
+
+# allow all outgoing
+ufw default allow outgoing
+
+# deny all inbound
+ufw default deny incoming
+
+# allow ssh from a specific ip
+ufw allow from 172.16.238.5 to any port 22 proto tcp
+
+# allow htttp from a specific ip
+ufw allow from 172.16.238.5 to any port 80 proto tcp
+
+# allow from an ip range
+ufw allow from 172.16.100.5/28 to any port 80 proto tcp
+
+# deny to a specific port
+ufw deny 8080
+
+# to enable the firewall
+ufw enable
+
+# to check status 
+ufw status
+
+# to delete a rule
+ufw delete deny 8080
+
+# or delete by line number
+ufw delete 5
+
+# use to show rule numbers
+ufw status numbered
+
+# ufw to allow a port range
+ufw allow starting\_port:ending_port/protocol
+eg.
+ufw allow 1000:2000/tcp
+
+# reset all rules
+ufw reset
+
+# Examples
+ufw allow from 135.22.65.0/24 to any port 9090 proto tcp
+ufw allow from 135.22.65.0/24 to any port 9091 proto tcp
+
+
+# find a port a specific service is running on 
+# netstat -antp | grep lighttpd
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      9269/lighttpd  
+
+```
 
 
 

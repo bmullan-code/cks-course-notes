@@ -379,6 +379,48 @@ docker run --name tracee --rm --privileged --pid=host \
   aquasec/tracee:0.4.0 --trace comm=ls  
 ```
 
+- to trace syscalls from a new container
+```
+docker run --name tracee --rm --privileged --pid=host \ 
+  -v /lib/modules/:/lib/modules/:ro   \
+  -v /usr/src:/usr/src:ro \
+  -v /tmp/tracee:/tmp/tracee   \
+  aquasec/tracee:0.4.0 --trace container=new
+```
+
+### Restricting syscalls
+
+- by default the kernel will allow any syscall from a process in user space
+-  use seccomp to restrict syscalls
+-  to check for seccomp enabled
+```
+grep -i seccomp /boot/config-$(uname -r)
+CONFIG_HAVE_ARCH_SECCOMP_FILTER=y
+CONFIG_SECCOMP_FILTER=y
+CONFIG_SECCOMP=y
+```
+- example to test it
+```
+docker run docker/whalesay cowsay hello
+```
+- Seccomp operates in 3 modes
+- - mode 0 - disabled
+- - mode 1 - strict
+- - mode 2 - filtered
+- eg.
+```
+ docker run -it --rm docker/whalesay /bin/sh
+# ps -ef
+UID          PID    PPID  C STIME TTY          TIME CMD
+root           1       0  0 23:50 pts/0    00:00:00 /bin/sh
+root           7       1  0 23:50 pts/0    00:00:00 ps -ef
+# grep Seccomp /proc/1/status
+Seccomp:	2
+Seccomp_filters:	1
+```
+- docker has a built in seccomp filter. 
+- limits to about 60 out of 300 syscalls
+- 
 
 
 

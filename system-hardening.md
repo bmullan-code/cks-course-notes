@@ -333,6 +333,55 @@ tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      
 
 ```
 
+### Linux Syscalls
+
+- linux kernel is the core interface between hardware and processes
+- kernel space : kernel runs in kernel space (kernel, device drivers etc.)
+- user space : apps run in user space
+- apps running in user space make system calls to access devices etc.
+
+#### Tracing System calls
+
+- which strace
+```
+/usr/bin/strace
+```
+- eg/ strace touch /tmp/error.log
+```
+ubuntu@opsmanager-2-10:~$ strace touch /tmp/error.log
+execve("/usr/bin/touch", ["touch", "/tmp/error.log"], [/* 15 vars */]) = 0
+brk(NULL)                               = 0x1b0f000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=30960, ...}) = 0
+```
+- to get the pid of a process use the pidof command
+```
+pidof etcd
+3596
+```
+- then we can strace the process for all future syscalls
+```
+pidof -p 3596
+```
+
+### Aquasec Tracee
+
+- traces syscalls in containers
+- uses ebpf
+- eg.
+```
+docker run --name tracee --rm --privileged --pid=host \ 
+  -v /lib/modules/:/lib/modules/:ro   \
+  -v /usr/src:/usr/src:ro \
+  -v /tmp/tracee:/tmp/tracee   \
+  aquasec/tracee:0.4.0 --trace comm=ls  
+```
+
+
+
+
 
 
 

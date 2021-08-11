@@ -420,8 +420,61 @@ Seccomp_filters:	1
 ```
 - docker has a built in seccomp filter. 
 - limits to about 60 out of 300 syscalls
-- 
+- you can use the following to specify a custom seccomp profile
+```
+docker run -it --rm --security-opt seccomp=/root/custom.json docker/whalesay /bin/sh
+```
+- you can disable seccomp with 
+```
+docker run -it --rm --security-opt seccomp=unconfined docker/whalesay /bin/sh
+```
 
+### implement seccomp in kubernetes
+
+- to test what syscalls are blocked we can run this container
+```
+docker run r.j3ss.co/amicontained amicontained
+```
+- to run in kubernetes
+```
+kubectl run amicontained --image r.j3ss.co/amicontained amicontained -- amicontained
+kubectl logs amicontained
+```
+- to apply a seccomp profile
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: amicontained
+  name: amicontained
+spec:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - args:
+    - amicontained
+    image: r.j3ss.co/amicontained
+    name: amicontained
+    securityContext:
+      allowPrivilegeEscalation: false
+      
+
+PS G:\tkgi> k logs amicontained
+Container Runtime: kube
+Has Namespaces:
+        pid: true
+        user: false
+AppArmor Profile: docker-default (enforce)
+Capabilities:
+        BOUNDING -> chown dac_override fowner fsetid kill setgid setuid setpcap net_bind_service net_raw sys_chroot mknod audit_write setfcap
+Seccomp: filtering
+Blocked Syscalls (60):
+        SYSLOG SETPGID SETSID USELIB USTAT SYSFS VHANGUP PIVOT_ROOT _SYSCTL ACCT SETTIMEOFDAY MOUNT UMOUNT2 SWAPON SWAPOFF REBOOT SETHOSTNAME SETDOMAINNAME IOPL IOPERM CREATE_MODULE INIT_MODULE DELETE_MODULE GET_KERNEL_SYMS QUERY_MODULE QUOTACTL NFSSERVCTL GETPMSG PUTPMSG AFS_SYSCALL TUXCALL SECURITY LOOKUP_DCOOKIE CLOCK_SETTIME VSERVER MBIND SET_MEMPOLICY GET_MEMPOLICY KEXEC_LOAD ADD_KEY REQUEST_KEY KEYCTL MIGRATE_PAGES UNSHARE MOVE_PAGES PERF_EVENT_OPEN FANOTIFY_INIT NAME_TO_HANDLE_AT OPEN_BY_HANDLE_AT SETNS PROCESS_VM_READV PROCESS_VM_WRITEV KCMP FINIT_MODULE KEXEC_FILE_LOAD BPF USERFAULTFD PKEY_MPROTECT PKEY_ALLOC PKEY_FREE
+Looking for Docker.sock
+PS G:\tkgi>
+```
 
 
 

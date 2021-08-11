@@ -476,7 +476,103 @@ Looking for Docker.sock
 PS G:\tkgi>
 ```
 
+- you can also specify local json files
+```
+mkdir -p /var/lib/kubelet/seccomp/profiles
+
+/var/lib/kubelet/seccomp/profiles/audit.json
+{
+   'defaultAction' : 'SCPM_ACT_LOG'
+}
 
 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-audit
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localHostProfile: profiles/audit.json
+  containers:
+  - command: ["bash","-c","echo 'i just made a syscall' && sleep 100"]
+    image: ubuntu
+    name: ubuntu
+    securityContext:
+      allowPrivilegeEscalation: false
+
+logs in 
+grep syscall /var/log/syslog
+
+# map numbers to syscall names
 
 
+```
+
+#### Sample Tracee output
+```
+controlplane $ ssh node01
+src:/usr/src:ro -v /tmp/tracee:/tmp/tracee -it aquasec/tracee:0.4.0 --trace container=newro -v /usr/s
+Unable to find image 'aquasec/tracee:0.4.0' locally
+0.4.0: Pulling from aquasec/tracee
+596ba82af5aa: Pull complete 
+79838d9f31c1: Pull complete 
+1ecb0bc0816d: Pull complete 
+8006fb4fbef7: Pull complete 
+Digest: sha256:d2706ee950677763991fb434b228f78cb8a05c20a85e537e131181cc0fe85fe3
+Status: Downloaded newer image for aquasec/tracee:0.4.0
+TIME(s)        UTS_NAME         UID    COMM             PID/host        TID/host        RET              EVENT                ARGS
+534.293947     hello            0      runc:[2:INIT]    1      /14450   1      /14450   0                execve               pathname: /pause, argv: [/pause]
+534.294016     hello            0      runc:[2:INIT]    1      /14450   1      /14450   0                security_bprm_check  pathname: /pause, dev: 265289728, inode: 3158150
+535.519725     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                execve               pathname: /usr/bin/echo, argv: [echo hello]
+535.519812     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                security_bprm_check  pathname: /usr/bin/echo, dev: 265289728, inode: 5517430
+535.519865     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                cap_capable          cap: CAP_SYS_ADMIN
+535.519872     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                cap_capable          cap: CAP_SYS_ADMIN
+535.519885     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                cap_capable          cap: CAP_SYS_ADMIN
+535.519889     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                cap_capable          cap: CAP_SYS_ADMIN
+535.519894     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                cap_capable          cap: CAP_SYS_ADMIN
+535.519898     hello            0      runc:[2:INIT]    1      /14582   1      /14582   0                cap_capable          cap: CAP_SYS_ADMIN
+535.520654     hello            0      echo             1      /14582   1      /14582   -2               access               pathname: /etc/ld.so.preload, mode: R_OK
+535.520689     hello            0      echo             1      /14582   1      /14582   0                security_file_open   pathname: /etc/ld.so.cache, flags: O_RDONLY|O_LARGEFILE, dev: 265289728, inode: 5517223
+535.520747     hello            0      echo             1      /14582   1      /14582   3                openat               dirfd: -100, pathname: /etc/ld.so.cache, flags: O_RDONLY|O_CLOEXEC, mode: 0
+535.520764     hello            0      echo             1      /14582   1      /14582   0                fstat                fd: 3, statbuf: 0x7FFC77256FB0
+535.520786     hello            0      echo             1      /14582   1      /14582   0                close                fd: 3
+535.520812     hello            0      echo             1      /14582   1      /14582   0                security_file_open   pathname: /usr/lib/x86_64-linux-gnu/libc-2.31.so, flags: O_RDONLY|O_LARGEFILE, dev: 265289728, inode: 5518083
+535.520844     hello            0      echo             1      /14582   1      /14582   3                openat               dirfd: -100, pathname: /lib/x86_64-linux-gnu/libc.so.6, flags: O_RDONLY|O_CLOEXEC, mode: 0
+535.520878     hello            0      echo             1      /14582   1      /14582   0                fstat                fd: 3, statbuf: 0x7FFC77257000
+535.520988     hello            0      echo             1      /14582   1      /14582   0                close                fd: 3
+535.521266     hello            0      echo             1      /14582   1      /14582   0                fstat                fd: 1, statbuf: 0x7FFC77257BD0
+535.521296     hello            0      echo             1      /14582   1      /14582   0                close                fd: 1
+535.521305     hello            0      echo             1      /14582   1      /14582   0                close                fd: 2
+535.521386     hello            0      echo             1      /14582   1      /14582   0                sched_process_exit   
+535.754993     hello            0      pause            1      /14450   1      /14450   0                sched_process_exit   
+
+
+```
+- example of applying a profile
+```
+controlplane $ cat /var/lib/kubelet/seccomp/profiles/audit.json 
+{
+    "defaultAction": "SCMP_ACT_LOG"
+}
+controlplane $ 
+
+cat /var/answers/audit-nginx.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx
+  name: audit-nginx
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: profiles/audit.json
+  containers:
+  - image: nginx
+    name: nginx
+controlplane $ k apply -f /var/answers/audit-nginx.yaml
+
+```

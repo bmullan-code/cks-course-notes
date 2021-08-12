@@ -576,3 +576,124 @@ spec:
 controlplane $ k apply -f /var/answers/audit-nginx.yaml
 
 ```
+
+### AppArmor
+
+- fine grained control over the processes running in a container
+- to check if it is running
+```
+ubuntu@opsmanager-2-10:~$ systemctl status apparmor
+ apparmor.service - LSB: AppArmor initialization
+   Loaded: loaded (/etc/init.d/apparmor; bad; vendor preset: enabled)
+   Active: active (exited) since Tue 2021-08-10 19:33:14 UTC; 1 day 5h ago
+     Docs: man:systemd-sysv-generator(8)
+    Tasks: 0
+   Memory: 0B
+      CPU: 0```
+```
+- apparmor needs to be enabled on each of the nodes in the cluster
+```
+cat /sys/module/apparmor/parameters/enabled
+Y
+```
+- to look at the apparmor profiles
+```
+ubuntu@opsmanager-2-10:~$ cat /sys/kernel/security/apparmor/profiles
+cat: /sys/kernel/security/apparmor/profiles: Permission denied
+ubuntu@opsmanager-2-10:~$ sudo cat /sys/kernel/security/apparmor/profiles
+/usr/sbin/tcpdump (enforce)
+/usr/sbin/ntpd (enforce)
+/usr/lib/connman/scripts/dhclient-script (enforce)
+/usr/lib/NetworkManager/nm-dhcp-helper (enforce)
+/usr/lib/NetworkManager/nm-dhcp-client.action (enforce)
+/sbin/dhclient (enforce)
+```
+- example of a profile
+```
+profile apparmor-deny-write flags=(attach_disconnected) {
+   file,
+   # deny all file writes
+   deny /** w/,
+}
+```
+- to check status of apparmor
+```
+aa-status
+
+ubuntu@opsmanager-2-10:~$ sudo aa-status
+apparmor module is loaded.
+6 profiles are loaded.
+6 profiles are in enforce mode.
+   /sbin/dhclient
+   /usr/lib/NetworkManager/nm-dhcp-client.action
+   /usr/lib/NetworkManager/nm-dhcp-helper
+   /usr/lib/connman/scripts/dhclient-script
+   /usr/sbin/ntpd
+   /usr/sbin/tcpdump
+0 profiles are in complain mode.
+1 processes have profiles defined.
+1 processes are in enforce mode.
+   /usr/sbin/ntpd (942)
+0 processes are in complain mode.
+0 processes are unconfined but have a profile defined.
+```
+- modes can be enforce, complain, unconfined
+
+
+### Creating AppArmor Profiles
+
+- apparmor utils
+```
+apt-get install -y apparmor-utils
+
+aa-genproof /root/add_data.sh
+
+# profile is created in 
+/etc/apparmor.d/root.add_data.sh
+```
+
+### running apparmor in kubernetes
+- apparmor kernel required on all nodes
+- apparmor profile on each node
+- eg.
+```
+pod does not need to write to fs, make sure profile (see example below) is on each node
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/<container-name>: localhost/profile-name
+  ...
+  
+# test writing to fs
+kubectl exec -ti my-pod -- touch /tmp/test
+... permission denied error
+```
+- to load a profile
+```
+apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
+```
+
+### Linux Capabilities
+- how to add or drop linux capabilities on pods
+- eg. bby default a pod cannot change the date
+- examples of capabilities (there are dozens)
+- - CAP_CHOWN, CAP_SYS_TIME
+- to check for capability
+```
+ubuntu@opsmanager-2-10:~$ getcap /usr/bin/ping
+```
+- A container even wheen run as root only has a limited set of capabilities
+- capabilities can be added or removed for a container with 
+```
+...
+spec:
+  containers:
+  ...
+  securityContext:
+    capabilities:
+      add: ["SYS_TIME"]
+      drop: ["CHOWN"]
+```

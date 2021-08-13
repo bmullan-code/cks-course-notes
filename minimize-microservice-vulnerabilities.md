@@ -362,7 +362,33 @@ root@controlplane:~#
 
 - see the rego playground
 - also see rego tests
-- 
+
+
+#### Lab
+- install opa on linux
+```
+export VERSION=v0.27.1
+curl -L -o opa https://github.com/open-policy-agent/opa/releases/download/${VERSION}/opa_linux_amd64
+chmod 755 ./opa
+./opa run -s &
+```
+- to test a rego policy
+```
+root@controlplane:~# ./opa test /root/example.rego 
+1 error occurred during loading: /root/example.rego:3: rego_parse_error: illegal default rule (value cannot contain var)
+        default allow = 
+        ^
+```
+- load a policy
+```
+curl -X PUT --data-binary @file.rego http://localhost:8181/v1/policies/policyname
+
+root@controlplane:~# curl -X PUT --data-binary @/root/sample.rego http://localhost:8181/v1/policies/policyname
+{"client_addr":"127.0.0.1:50404","level":"info","msg":"Received request.","req_id":2,"req_method":"PUT","req_path":"/v1/policies/policyname","time":"2021-08-13T23:29:29Z"}
+{"client_addr":"127.0.0.1:50404","level":"info","msg":"Sent response.","req_id":2,"req_method":"PUT","req_path":"/v1/policies/policyname","resp_bytes":2,"resp_duration":1.788821,"resp_status":200,"time":"2021-08-13T23:29:29Z"}
+{}root@controlplane:~# 
+
+```
 
 
 

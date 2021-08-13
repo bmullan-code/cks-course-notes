@@ -66,3 +66,10 @@ root@controlplane:~# ps -ef | grep kube-apiserver | grep admission-plugins
 root     21584 21566  0 21:26 ?        00:00:09 kube-apiserver --advertise-address=10.42.136.8 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction,NamespaceAutoProvision --disable-admission-plugins=DefaultStorageClass
 ```
 
+### More on Admission Controllers
+
+- DefaultStorageClass admission controller is an example of a *mutating* admission controller as it will change/mutate the object before it is created.
+- It check for storage class in a PVC request, if not present it will add a default one.
+- A *validating admission controller* will validate a request and reject it if it does not pass some condition
+
+- 

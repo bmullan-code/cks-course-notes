@@ -8,7 +8,7 @@ https://devopscube.com/cks-exam-guide-tips/
 
 ### [System Hardening](system-hardening.md)
 
-### Minimize Microservices Vulnerabilities
+### [Minimize Microservices Vulnerabilities](minimize-microservice-vulnerabilities.md)
 
 ### Supply Chain Security
 

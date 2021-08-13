@@ -249,8 +249,121 @@ spec:
     - name: busybox
       image: busybox
       command: ["sh", "-c", "echo I am running as user $(id -u)"]
-      
-      
+```
+
+### Pod Security Policies
+
+- limit how a pod is run, for example you might not want the following
+```
+spec:
+  containers:
+    securityContext:
+      priviliged: True
+      runAsUser: 0
+      capabilities:
+        add: ["SYS_TIME"]
+```
+- pod security policy is enabbled as an admission controller.
+```
+- --enable-admission-plugins=PodSecurityPolicy
+```
+- then create a PodSecurityPolicy object
+```
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: example-psp
+spec:
+  priviliged: false
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+```
+- requires a service account authorized with the psp
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: psp-example-role
+rules:
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  resourceNames: ["example-psp"]
+  verbs: ["use"]
+```
+
+#### Lab
+- enabble psp controller
+```
+vi /etc/kubernetes/manifests/kube-apiserver.yaml 
 
 ```
+- example psp
+```
+root@controlplane:~# cat /root/psp.yaml
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: example-psp
+spec:
+  privileged: false
+  seLinux:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  volumes:
+  - configMap
+  - secret
+  - emptyDir
+  - hostPath
+```
+- try to apply pod from above
+```
+root@controlplane:~#  cat /root/pod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+    name: example-app
+spec:
+    containers:
+        -
+            name: example-app
+            image: ubuntu
+            command: ["sleep" , "3600"]
+            securityContext:
+              privileged: True
+              runAsUser: 0
+              capabilities:
+                add: ["CAP_SYS_BOOT"]
+    volumes:
+    -   name: data-volume
+        hostPath:
+          path: '/data'
+          type: Directory
+          
+          
+root@controlplane:~# k apply -f /root/pod.yaml 
+Error from server (Forbidden): error when creating "/root/pod.yaml": pods "example-app" is forbidden: PodSecurityPolicy: unable to admit pod: [spec.containers[0].securityContext.privileged: Invalid value: true: Privileged containers are not allowed spec.containers[0].securityContext.capabilities.add: Invalid value: "CAP_SYS_BOOT": capability may not be added]
+root@controlplane:~# 
+```
+- notes
+- RequiredDropCapabilities - The capabilities which must be dropped from containers. These capabilities are removed from the default set, and must not be added. Capabilities listed in RequiredDropCapabilities must not be included in AllowedCapabilities or DefaultAddCapabilities.
+
+### OPA - Open Policy Agent
+
+- see the rego playground
+- also see rego tests
+- 
+
+
+
 

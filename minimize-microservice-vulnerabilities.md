@@ -447,5 +447,21 @@ spec:
 ```
 
 
+### MTLS - Mutual TLS
+
+- server validate data is being sent by identified sender. 
+- will verify identity of each party
+- using mTLS to secure interpod communication
+- uses istio or linkerd
+- allow secure service to service communication.
+- encrypt / decrypt
+- multiple services 
+- also known as service mesh
+- Istio
+- eg. webapp needs to talk to mysql pod
+- with istio, a sidecar container is added to each pod
+- request from webapp to mysql is intercepted by the sidecar and encrypted before sending to the sidecar in mysql and then passed to the container
+- modes, when-possible or strict.
+
 
 

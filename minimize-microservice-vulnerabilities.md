@@ -390,6 +390,18 @@ root@controlplane:~# curl -X PUT --data-binary @/root/sample.rego http://localho
 
 ```
 
+### OPA in Kubernetes
+
+- deployed with a ValidatingAdmissionWebhook
+- configured with a ValidatingWebhookConfiguration
+
+- An AdmissionReview (which contains the pod spec) is sent to the opa server which validates it against a set of policies implmented in rego
+- an admissionReview object does not have additional context information other than what is in the new request
+- to work around this you can in the rego import additional information eg.
+```
+import data.kubernetes.pods
+```
+
 
 
 

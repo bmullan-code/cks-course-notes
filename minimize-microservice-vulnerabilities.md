@@ -403,5 +403,49 @@ import data.kubernetes.pods
 ```
 
 
+### gVisor
+
+- linux kernel is complex
+- access via syscalls
+- not great for security, interacting with kernel increases attack surface
+- eg. dirty cow
+- seccomp / apparmor white/black list syscalls
+- in a multi-tenant environment all tenants interact with the same kernel. 
+- how to isolate access to the kernel
+- this is what gVisor aims to achieve
+- adds a layer between the kernel and user space applications.
+- syscalls are made to the gvisor
+- gvisor sandbox - 
+- 1) sentry (app level kernel for containers, intercepts and responds to syscalls made by containers)
+- 2) gofer - a file proxy for access to system files
+- can be slightly slower
+
+### katacontainers
+
+- uses vms to isolate container
+- each container is run in its own vm with its own kernel
+- relies on nest virtualization which can be slow
+
+
+### Runtimes
+
+- eg. gvisor is a runtime, how to instruct pods to make use of the runteim
+- done throught the RuntimeClass type
+- contains name and handler eg.
+```
+apiVersion: node.k8s.io/v1beta1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+```
+- handler would be kata for katacontainers
+- to use the runtime specify in the pod spec
+```
+spec:
+  runttimeClassName: gvisor
+```
+
+
 
 

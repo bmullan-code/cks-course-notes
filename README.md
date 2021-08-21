@@ -10,7 +10,7 @@ https://devopscube.com/cks-exam-guide-tips/
 
 ### [Minimize Microservices Vulnerabilities](minimize-microservice-vulnerabilities.md)
 
-### Supply Chain Security
+### [Supply Chain Security](supply-chain-security.md)
 
 ### Monitoring, Logging and Runtime
 

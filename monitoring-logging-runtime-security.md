@@ -172,6 +172,69 @@ kill -1 $(cat /var/run/falco.pid)
 
 ```
 
+### Falco Reference Links
+
+Below are some references:
+
+https://falco.org/docs/getting-started/installation/
+
+https://github.com/falcosecurity/charts/tree/master/falco
+
+https://falco.org/docs/rules/supported-fields/
+
+https://falco.org/docs/rules/default-macros/
+
+https://falco.org/docs/configuration/
+
+
+### Mutable .v. Immutable Infrastructure
+
+- in place updates, update an existing instance
+- immutable, create new instances and replace old ones
+- rolling updates, replace instances one by one
+- it is not desirable to make changes to existing instances
+
+#### How to ensure immutability
+
+- changes can be made to an instance by for example
+```
+kubectp cp nginx.conf nginx:/etc/nginx
+```
+or
+```
+kubectl exec -ti nginx -- bash nginx:/etc/nginx
+```
+- how to prevent this ?
+- make the root filesystem readonly
+```
+spec:
+  containers:
+    securityContext:
+      readOnlyRootFileSystem: true
+```
+- however this may cause problems with existing programs, for example nginx needs to be able to write to at least two locations. (eg. to write pid etc)
+- we can work around this by adding volumeMounts for the locations required to write
+```
+spec:
+  containers:
+    volumeMounts:
+    - name: cache-volume
+      mountPath: /var/cache/nginx
+    - name: runtime-volume
+      mountPath: /var/run
+      
+    volumes:
+      - name: cache-volume
+        emptyDir : {}
+      - name: runtime-volume
+        emptyDir : {}
+```
+- now if you otherwise try to update the pod it should fail, but the pod will run normally
+- use of the prviliged flag breaks immutability
+- stick to the principal of least privilidge
+
+
+
 
 
 

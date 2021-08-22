@@ -676,6 +676,38 @@ kubectl exec -ti my-pod -- touch /tmp/test
 apparmor_parser -q /etc/apparmor.d/usr.sbin.nginx
 ```
 
+#### AppArmor from Mock Exam 1
+
+```
+# apparmor profile provided in  /etc/apparmor.d/frontend
+ssh node01
+# apparmor status
+systemctl status apparmor
+# enabled ?
+cat /sys/module/apparmor/parameters/enabled
+# profiles
+cat /sys/kernel/security/apparmor/profiles
+# status
+aa-status
+# check the provided profile
+cat /etc/apparmor.d/frontend
+# check to see if profile is loaded
+aa-status | grep frontend
+cat /sys/kernel/security/apparmor/profiles | grep frontend
+# load the profile
+apparmor_parser -r /etc/apparmor.d/frontend
+# check that it was loaded
+root@node01:~# cat /sys/kernel/security/apparmor/profiles | grep frontend
+restricted-frontend (enforce)
+
+# apply the profile to the pod via annotation
+metadata:
+  name: frontend-site
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/nginx: localhost/restricted-frontend
+
+```
+
 ### Linux Capabilities
 - how to add or drop linux capabilities on pods
 - eg. bby default a pod cannot change the date

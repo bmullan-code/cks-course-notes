@@ -337,6 +337,49 @@ rules:
 ```
 
 
+### Falco Lab
+
+- /etc/falco/falco_rules.local.yaml
+```
+
+# Or override/append to any rule, macro, or list from the Default Rules
+# Container is supposed to be immutable. Package management should be done in building the image.
+- rule: Launch Package Management Process in Container
+  desc: Package management process ran inside container
+  condition: >
+    spawned_process
+    and container
+    and user.name != "_apt"
+    and package_mgmt_procs
+    and not package_mgmt_ancestor_procs
+    and not user_known_package_manager_in_container
+  output: >
+    Package Management Tools Executed (user=%user.name command=%proc.cmdline container_id=%container.id)
+#    Package management process launched in container (user=%user.name user_loginuid=%user.loginuid
+#    command=%proc.cmdline container_id=%container.id container_name=%container.name image=%container.image.repository:%container.image.tag)
+  priority: ERROR
+  tags: [process, mitre_persistence]
+```
+- restart falco
+```
+cat /var/run/falco.pid
+kill -1 $(cat /var/run/falco.pid)
+```
+- test
+```
+controlplane $ kubectl exec simple-webapp-1 -- apt update
+
+journalctl -fu falco
+
+Aug 22 16:52:12 node01 falco[7307]: Sun Aug 22 16:52:12 2021: Starting internal webserver, listening on port 8765
+Aug 22 16:52:49 node01 falco[7307]: 16:52:49.489637260: Error Package Management Tools Executed (user=root command=apt update container_id=8e3ae9ede67a)
+Aug 22 16:52:49 node01 falco[7307]: 16:52:49.489637260: Error Package Management Tools Executed (user=root command=apt update container_id=8e3ae9ede67a)
+
+```
+
+
+
+
 
 
 

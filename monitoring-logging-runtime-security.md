@@ -116,6 +116,62 @@ rules.yaml
 https://falco.org/docs/rules/default-macros/
 
 
+#### Falco Configuration Files
+
+- main file /etc/falco/falco.yaml
+- logs 
+```
+journalctl -fu falco
+```
+- rules are specified in the file by variable *rules_file*
+```
+rules_file:
+  - /etc/falco/falco_rules.yaml
+  - /etc/falco/falco_rules.local.yaml
+  ...
+```
+- other config
+```
+json_output: false|true
+log_stderr
+log_syslog
+log_level: info 
+priority: debug # anything higher than this level will be logged
+```
+- output
+```
+stdout_output:
+  enabled: true
+file_output:
+  enabled: true
+  filename: /opt/falco/events.txt
+program_output:
+  enabled: true
+  program: "jq '{text: .ouput} | curl -d @- -X POST https://hooks.slack.com/services/xxx"
+http_output
+  enabled: true
+  url: htttp://some.url/some/path/
+```
+- changes made require a reload
+```
+
+```
+- rules files
+```
+# default rules file, many builtin rules but we can add our own or override existing
+# /etc/falco/falco_rules.yaml
+
+# you should not make changes to this file as it will be overwritten by new versions
+# instead add to 
+# /etc/falco/falco_rules.local.yaml
+
+# to reload rules files
+# find the pid of falco process
+cat /var/run/falco.pid
+kill -1 $(cat /var/run/falco.pid)
+
+```
+
 
 
 

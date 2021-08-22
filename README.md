@@ -12,7 +12,7 @@ https://devopscube.com/cks-exam-guide-tips/
 
 ### [Supply Chain Security](supply-chain-security.md)
 
-### Monitoring, Logging and Runtime
+### [Monitoring, Logging and Runtime](monitoring-logging-runtime-security.md)
 
 
 

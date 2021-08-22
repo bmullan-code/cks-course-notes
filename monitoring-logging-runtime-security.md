@@ -233,6 +233,109 @@ spec:
 - use of the prviliged flag breaks immutability
 - stick to the principal of least privilidge
 
+### Audit what is happening in the cluster
+
+- audit events
+- audit policies control what is logged eg. only log pod deletions in a particular namespace
+```
+apiVersion:
+kind: Policy
+omitStages:
+rules:
+```
+- omitStates eg.
+```
+omitStages: ["RequestReceived"]
+```
+- audit pod deletes in a namespace
+```
+kind: Policy
+omitStages: ["RequestReceived"]
+rules:
+  - namespaces: ["prod-namespace"]
+    verbs: ["delete"]
+    resources:
+    - groups: ""
+      resources: ["pods"]
+      resourceNames: ["webapp-pod"] # optional
+    level: Metadata | Request | RequestResponse # optional
+   
+   # will audit all operations on secrets
+   - level: Metadata
+     resources:
+     - groups: ""
+       resources: ["secrets"]
+
+```
+- to enable auditing
+```
+# /etc/kubernetes/manifest/kube-apiserver.yaml
+spec:
+  containers:
+  - command:
+  - kube-apiserver
+  ...
+  - --audit-log-path=/var/log/k8-audit.log
+  - --audit-policy-file=/etc/kubernetes/audit-policy.yaml
+```
+- other audit options
+```
+- --audit-log-maxage=10 # 10 days
+- --audit-log-maxsize=5 # 5 mb
+- --audit-log-backups=5
+```
+- procedure
+- - create the audit-policy.yaml
+- - enable the policy file on the kube api-server
+
+
+
+### Labs Solution
+
+- policy
+```
+# /etc/kubernetes/prod-audit.yaml
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+- level: Metadata
+  namespaces: ["prod"]
+  verbs: ["delete"]
+  resources:
+  - group: ""
+    resources: ["secrets"]
+```
+
+- changes to api-server
+```
+- --audit-policy-file=/etc/kubernetes/prod-audit.yaml
+ - --audit-log-path=/var/log/prod-secrets.log
+ - --audit-log-maxage=30
+```
+
+- volumes
+```
+- name: audit
+  hostPath:
+    path: /etc/kubernetes/prod-audit.yaml
+    type: File
+
+- name: audit-log
+  hostPath:
+    path: /var/log/prod-secrets.log
+    type: FileOrCreate
+```
+
+- volumeMounts
+```
+- mountPath: /etc/kubernetes/prod-audit.yaml
+  name: audit
+  readOnly: true
+- mountPath: /var/log/prod-secrets.log
+  name: audit-log
+  readOnly: false
+```
+
 
 
 

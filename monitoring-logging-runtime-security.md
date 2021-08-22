@@ -80,6 +80,41 @@ rules.yaml
   output: Bash Shell Opened (user=%user.name %container.id)
   priority: WARNING
 ```
+- example of filters
+- - container.id
+- - proc.name
+- - fd.name
+- - evt.type (open, accept etc)
+- - user.name
+- - conatiner.image.repository
+
+https://falco.org/docs/rules/supported-fields/
+
+- example that uses a list
+```
+
+rules.yaml
+- list: linux_shells
+  items: [bash, zsh, ksh,sh,csh]
+- rule: Detech shell inside a container
+  desc: Alert if a shell such as bash is open
+  condition: container.id != host and proc.name in (linux_shells)
+  output: Bash Shell Opened (user=%user.name %container.id)
+  priority: WARNING
+```
+- example of a macro
+```
+- macro: container
+  condition: container.id != host
+
+- rule: Detech shell inside a container
+  desc: Alert if a shell such as bash is open
+  condition: container and proc.name in (linux_shells)
+  output: Bash Shell Opened (user=%user.name %container.id)
+  priority: WARNING
+```
+https://falco.org/docs/rules/default-macros/
+
 
 
 

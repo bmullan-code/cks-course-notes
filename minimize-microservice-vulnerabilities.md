@@ -431,6 +431,28 @@ spec:
         name: db-secret
 ```
 
+#### Secrets Question 2 - Mock Exam 1
+- how to extract data value from secret
+```
+kubectl get secrets/db-user-pass --template={{.data.password}}
+
+kubectl get secret/a-safe-secret -n orion --template={{.data.CONNECTOR_PASSWORD}} | base64 -d
+n0On3C@nH@ckM3
+
+# mount as a volume
+
+  volumes:
+  - name: connector-password
+    secret:
+      defaultMode: 420
+      secretName: a-safe-secret
+      
+ - mountPath: /mnt/connector/password
+      name: connector-password
+      readOnly: true
+
+
+```
 
 Article – Note on Secrets
 Remember that secrets encode data in base64 format. Anyone with the base64 encoded secret can easily decode it. As such the secrets can be considered not very safe.

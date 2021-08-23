@@ -439,6 +439,9 @@ kubectl get secrets/db-user-pass --template={{.data.password}}
 kubectl get secret/a-safe-secret -n orion --template={{.data.CONNECTOR_PASSWORD}} | base64 -d
 n0On3C@nH@ckM3
 
+# other way
+ kubectl -n orion get secrets a-safe-secret -o jsonpath='{.data.CONNECTOR_PASSWORD}' | base64 --decode
+
 # mount as a volume
 
   volumes:

@@ -13,6 +13,5 @@ ssh node01
  securityContext:
     seccompProfile:
       type: Localhost
-      localHostProfile: profiles/audit.json
-      
+      localhostProfile: profiles/audit.json
 ```

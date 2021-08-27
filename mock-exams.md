@@ -134,4 +134,39 @@ spec:
   automountServiceAccountToken: false
 ```
 
+#### Q6 - Debug services listening on ports
+
+```
+#First SSH to node01 from controlplane:
+controlplane $ ssh node01
+
+#Next, check the process which is bound to port 8088 on this node using netstat"
+node01 $ netstat -natulp | grep 8088
+
+#This shows that the the process openlitespeed is the one which is using this port.
+#Check if any service is running with the same name
+node01 $ systemctl list-units  -t service --state active | grep -i openlitespeed
+lshttpd.service                    loaded active running OpenLiteSpeed HTTP Server
+
+# This shows that a service called openlitespeed is managed by lshttpd.service which is currently active.
+# Stop the service and disable it
+node01 $ systemctl stop lshttpd
+node01 $ systemctl disable lshttpd
+
+# Finally, check for the package by the same name
+node01 $ apt list --installed | grep openlitespeed
+
+# Uninstall the package
+node01 $ apt remove openlitespeed -y
+```
+
+# netstat -natulp | grep 8088
+tcp        0      0 0.0.0.0:8088            0.0.0.0:*               LISTEN      14090/openlitespeed 
+tcp        0      0 0.0.0.0:8088            0.0.0.0:*               LISTEN      14090/openlitespeed 
+
+# systemctl list-units  -t service --state active | grep -i openlitespeed
+lshttpd.service                    loaded active running OpenLiteSpeed HTTP Server         
+
+
+
 

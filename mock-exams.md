@@ -112,3 +112,26 @@ plugins:
 
 ```
 
+
+### Mock Exam 2
+
+#### Q3 - Service Accounts
+
+- Dont mount the service account token
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: apps-cluster-dash
+  name: apps-cluster-dash
+  namespace: gamma
+spec:
+  containers:
+  - image: nginx
+    name: apps-cluster-dash
+  serviceAccountName: cluster-view
+  automountServiceAccountToken: false
+```
+
+

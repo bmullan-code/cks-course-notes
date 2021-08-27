@@ -22,4 +22,18 @@ ssh node01
 - --authorization-mode=Node,RBAC
 ```
 
+### Q6 Falco
+
+```
+# you should not make changes to this file as it will be overwritten by new versions
+# instead add to 
+# /etc/falco/falco_rules.local.yaml
+
+# to reload rules files
+# find the pid of falco process
+cat /var/run/falco.pid
+kill -1 $(cat /var/run/falco.pid)
+
+```
+
 

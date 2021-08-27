@@ -68,5 +68,47 @@ $ kill -1 $(cat /var/run/falco.pid)
 
 ```
 
+#### Q8 Admission Controller
+```
 
+#Create the below admission-configuration inside /root/CKS/ImagePolicy directory in the controlplane
+apiVersion: apiserver.config.k8s.io/v1
+kind: AdmissionConfiguration
+plugins:
+- name: ImagePolicyWebhook
+  configuration:
+    imagePolicy:
+      kubeConfigFile: /etc/admission-controllers/admission-kubeconfig.yaml
+      allowTTL: 50
+      denyTTL: 50
+      retryBackoff: 500
+      defaultAllow: false
+
+#The /root/CKS/ImagePolicy is mounted at the path /etc/admission-controllers directory in the kube-apiserver. So, you can directly place the files under /root/CKS/ImagePolicy.
+#---snippet of the volume and volumeMounts (already added to apiserver config) ---#
+  containers:
+  .
+  .
+  .
+  volumeMounts:
+  - mountPath: /etc/admission-controllers
+      name: admission-controllers
+      readOnly: true
+
+  volumes:
+  - hostPath:
+      path: /root/CKS/ImagePolicy/
+      type: DirectoryOrCreate
+    name: admission-controllers
+#---------------------------------------------------------------------------------# 
+
+
+
+#Next, update the kube-apiserver command flags and add ImagePolicyWebhook to the enable-admission-plugins flag. Use the configuration file that was created in the previous step as the value of 'admission-control-config-file'. 
+#Note: Remember, this command will be run inside the kube-apiserver container, so the path must be /etc/admission-controllers/admission-configuration.yaml (mounted from /root/CKS/ImagePolicy in controlplane)
+    - --admission-control-config-file=/etc/admission-controllers/admission-configuration.yaml
+    - --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook
+
+
+```
 

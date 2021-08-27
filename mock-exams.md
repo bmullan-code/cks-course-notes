@@ -15,3 +15,11 @@ ssh node01
       type: Localhost
       localhostProfile: profiles/audit.json
 ```
+
+#### Q5 CIS Benchmark
+
+```
+- --authorization-mode=Node,RBAC
+```
+
+

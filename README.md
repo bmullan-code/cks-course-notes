@@ -12,6 +12,8 @@ https://devopscube.com/cks-exam-guide-tips/
 
 ### [Supply Chain Security](supply-chain-security.md)
 
+#### link: https://thenewstack.io/securing-the-software-supply-chain-with-slsa/
+
 ### [Monitoring, Logging and Runtime](monitoring-logging-runtime-security.md)
 
 

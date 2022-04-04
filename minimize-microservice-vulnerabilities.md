@@ -24,7 +24,7 @@ spec:
       capabilities:
         add: ["MAC_ADMIN"]
 ```
-- lab: try running data command in pod
+- lab: try running date command in pod
 ```
 kubectl exec -it ubuntu-sleeper -- date -s '19 APR 2012 11:14:00'
 

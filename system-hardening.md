@@ -3,11 +3,11 @@
 |      |      |      |
 | ---- | ---- | ---- |
 |Minimize Host OS Footprint | Limit Node Access | SSH Hardening | 
-|Privilidge escalation in linux | Remove obsolete packages and services | Restrict Kernel Modules| 
+|Privilege escalation in linux | Remove obsolete packages and services | Restrict Kernel Modules| 
 |Identify and disable open ports | minimize iam roles | UFW Firewall Baiscs | Restricting syscals using secomp |
 |seccomp in kubernetes | kernel hardening tools - app armor | 
 
-### Least Prvilige Principle
+### Least Privilege Principle
 
 eg.
 - limit access to nodes
@@ -62,7 +62,7 @@ uid=2328(sam) gid=1000(admin) groups=1000(admin)
 
 ### SSH Hardening
 
-### Privilidge escalation in linux
+### Privilege escalation in linux
 
 - root access may be disabled in ssh
 ```

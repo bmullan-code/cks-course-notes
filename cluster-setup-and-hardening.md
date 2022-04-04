@@ -639,7 +639,7 @@ ok
 ### Authorization
 
 - *node* authorizer. 
-- privilidges used by kubelet to authorize to api-server
+- Privileges used by kubelet to authorize to api-server
 - *ABAC*
 - policy file passed to api-server with the set of permissions (requires restart on every change)
 
@@ -1272,7 +1272,7 @@ docker ps
 ```
 
 ### Securing the Docker Daemon
-- with access to the docker daemon can delete applications, delete volumes, run their own applications or gain access to the host by running a privilidged container.
+- with access to the docker daemon can delete applications, delete volumes, run their own applications or gain access to the host by running a privileged container.
 - you must secure the docker host eg.
   - disable root users
   - who has access
